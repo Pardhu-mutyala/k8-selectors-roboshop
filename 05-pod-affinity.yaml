@@ -20,18 +20,29 @@ metadata:
 spec:
   affinity:
     podAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
+      # requiredDuringSchedulingIgnoredDuringExecution:
+      # # ensure that Pods associated with this tenant land on the correct node pool
+      # - labelSelector:
+      #     # We have to have the labelSelector which selects only Pods with the tenant label,
+      #     # otherwise this Pod would have anti-affinity against Pods from daemonsets as well, for example,
+      #     # which aren't supposed to have the tenant label.
+      #     matchExpressions:
+      #       - key: app-name
+      #         operator: In
+      #         values:
+      #         - pod-1
+      #   topologyKey: "kuberenetes.io/hostname"
+      preferredDuringSchedulingIgnoredDuringExecution:
       # ensure that Pods associated with this tenant land on the correct node pool
-      - labelSelector:
-          # We have to have the labelSelector which selects only Pods with the tenant label,
-          # otherwise this Pod would have anti-affinity against Pods from daemonsets as well, for example,
-          # which aren't supposed to have the tenant label.
-          matchExpressions:
-            - key: app-name
-              operator: In
-              values:
-              - pod-1
-        topologyKey: "kuberenetes.io/hostname"
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app-name
+                operator: In
+                values:
+                - pod-1
+          topologyKey: "kuberenetes.io/hostname"
       
   containers:
     - name: pod-2
